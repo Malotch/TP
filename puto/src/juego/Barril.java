@@ -38,7 +38,7 @@ public class Barril {
 		
 		public int caer (int y)
 		{
-			return this.y+=1*y;
+			return this.y+=y;
 		}
 		
 /*		public void avanzarDerecha() 
