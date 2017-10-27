@@ -36,9 +36,9 @@ public class Barril {
 			return this.x+=this.velocidad*velocidad;
 		}
 		
-		public int caer (int y)
+		public int caer (int variacion)
 		{
-			return this.y+=y;
+			return this.y+=variacion;
 		}
 		
 /*		public void avanzarDerecha() 
