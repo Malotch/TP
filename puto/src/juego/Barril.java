@@ -1,73 +1,105 @@
 package juego;
 
 import java.awt.Color;
-import java.util.Random;
 
 import entorno.Entorno;
 
 public class Barril {
-		// Variables de instancia
-		private int x, y;
-		private double diametro;
-		private int velocidad;
-		private int direccion;
-		//private boolean atrapada;
-		
-		public Barril(int x, int y,int diametro) 
-		{
-			//this.x = x;
-			//this.y = y;
-			this.diametro = diametro;
-			Random gen = new Random();			
-			this.x = x;
-			this.y = y;
-			this.velocidad = 1 + gen.nextInt(5);
-			//this.y = gen.nextInt(600);
-			
-		}
+	// Variables de instancia
+	private int x, y;
+	private double diametro;
+	private int velocidad;
+	private boolean cayendo;
+	private int direccion;
+	private boolean activo;
 
-		public void dibujarse(Entorno entorno) 
-		{
-			entorno.dibujarCirculo(this.x, this.y, this.diametro, Color.white);		
-		}
+	public Barril(int x, int y,int diametro) {
+		this.diametro = diametro;		
+		this.x = x;
+		this.y = y;
+		this.velocidad = 3;
+		this.cayendo = true;
+		this.direccion = 1;
+		this.activo = false;			
+	}
 
-		public int avanzar(int velocidad) 
-		{
-			return this.x+=this.velocidad*velocidad;
-		}
-		
-		public int caer (int variacion)
-		{
-			return this.y+=variacion;
-		}
-		
-/*		public void avanzarDerecha() 
-		{
-			this.x+= this.velocidad;
-		}
-		
-*/		public boolean ColisionViga(Barras ba ) {
-		if (ba.getY() + (ba.getAlto()/2) >= this.y - (this.diametro / 2) && ba.getY() - (ba.getAlto()/2) <= this.y + (this.diametro / 2) &&
-			ba.getX() + (ba.getAncho()/2) >= this.x - (this.diametro/ 2) && ba.getX() - (ba.getAncho()/2) <= this.x + (this.diametro / 2))
-		{
-			return true;
-		}					
-		return false;					
-		}
+	public void dibujarse(Entorno entorno) {
+		entorno.dibujarCirculo(this.x, this.y, this.diametro, Color.white);
+	}
 
-		public int getY() 
-		{
-			return this.y;
-		}
+	public void avanzar(int variacion) {
+		this.x += variacion * this.direccion;
+	}
 
-		public int getX() 
-		{
-			return this.x;
+	public void moverse() {
+		if (this.isCayendo()) {
+			this.caer(1);
+			this.avanzar(1);
+		} else {
+			this.avanzar(this.velocidad);
 		}
-		public double getDiametro() 
-		{
-			return this.diametro;
-		}
-		
+	}
+
+	public void cambiarDireccion() {
+		this.direccion *= -1;
+	}
+
+	public int caer(int y) {
+		return this.y += y;
+	}
+
+	public boolean colisionBarraVertical(Barra barra) {
+		return (this.getLimiteInferior() >= barra.getLimiteSuperior())
+				&& this.getLimiteSuperior() <= barra.getLimiteInferior();
+	}
+
+	public boolean colisionBarraHorizontal(Barra barra) {
+		return this.getLimiteIzquierdo() <= barra.getLimiteDerecho()
+				&& this.getLimiteDerecho() >= barra.getLimiteIzquierdo();
+	}
+
+	public int getY() {
+		return this.y;
+	}
+
+	public int getX() {
+		return this.x;
+	}
+
+	public double getDiametro() {
+		return this.diametro;
+	}
+
+	public double getLimiteInferior() {
+		return this.y + (this.diametro / 2);
+	}
+
+	public double getLimiteIzquierdo() {
+		return this.x - (this.diametro / 2);
+	}
+
+	public double getLimiteDerecho() {
+		return this.x + (this.diametro / 2);
+	}
+
+	public double getLimiteSuperior() {
+		return this.y - (this.diametro / 2);
+	}
+
+	public boolean isCayendo() {
+		return cayendo;
+	}
+
+	public void setCayendo(boolean cayendo) {
+		this.cayendo = cayendo;
+	}
+
+	public boolean isActivo() {
+		return activo;
+	}
+
+	public void setActivo(boolean activo) {
+		this.activo = activo;
+	}
 
 }

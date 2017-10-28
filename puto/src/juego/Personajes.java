@@ -54,7 +54,7 @@ public class Personajes {
 			return this.x;
 		}		
 		
-		public boolean ColisionViga(Barras ba ) {
+		public boolean ColisionViga(Barra ba ) {
 		if (ba.getY() + (ba.getAlto()/2) >= this.y - (this.alto / 2) && ba.getY() + (ba.getAlto()/2) <= this.y + (this.alto / 2) &&
 			ba.getX() + (ba.getAncho()/2) >= this.x - (this.ancho / 2) && ba.getX() + (ba.getAncho()/2) <= this.x + (this.ancho / 2))
 		{
@@ -63,7 +63,7 @@ public class Personajes {
 		return false;					
 		}
 		
-		public boolean ColisionEscalera(Barras ba) {
+		public boolean ColisionEscalera(Barra ba) {
 		if (ba.getY() + (ba.getAlto()/2) >= this.y - (this.alto / 2) && ba.getY() - (ba.getAlto()/2) <= this.y + (this.alto / 2) &&
 			ba.getX() + (ba.getAncho()/2) >= this.x - (this.ancho / 2) && ba.getX() - (ba.getAncho()/2) <= this.x + (this.ancho / 2))
 		{

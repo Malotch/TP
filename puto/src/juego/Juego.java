@@ -11,18 +11,19 @@ public class Juego extends InterfaceJuego
 	
 	// Variables y métodos propios de cada grupo
 	// ...
-	Barril [] ba = new Barril[5];
-	Barras [] viga = new Barras[4];
-	Barras [] escalera = new Barras [3];
+	Barril [] barril = new Barril[5];
+	Barra [] vigas = new Barra[4];
+	Barra [] escalera = new Barra [3];
 	Personajes donkey =  new Personajes (15,5);
 	Personajes Mario = new Personajes (5,550);;
 	boolean colEscalera;
 	boolean colViga;
+	int contadorTicks = 0;
 	
 	Juego()
 	{
 		
-this.entorno = new Entorno(this, "RescateDonkey - Grupo Apellido1 - Apellido2 -Apellido3 - V0.01", 800, 600);
+this.entorno = new Entorno(this, "RescateDonkey Seba puto V0.01", 800, 600);
 		
 		// Inicializar lo que haga falta para el juego
 		// ...
@@ -31,33 +32,34 @@ this.entorno = new Entorno(this, "RescateDonkey - Grupo Apellido1 - Apellido2 -A
 		{
 			if 	(i % 2 == 0) 
 			{
-				escalera[i-1]=new Barras(250,360,25,160);
+				escalera[i-1]=new Barra(250,360,25,160);
 			}
 			else
 			{
-				escalera[i-1] = new Barras(550,((600/viga.length)*i)+60,25,160);
+				escalera[i-1] = new Barra(550,((600/vigas.length)*i)+60,25,160);
 			}
 		}
 		
-		for (int i = 1;i < viga.length+1;i++)
+
+		for (int i = 1;i < vigas.length+1;i++)
 		{
 			if 	(i == 4) {
-				viga[i-1]=new Barras(400,600,850,30);
+				vigas[i-1]=new Barra(400,600,850,30);
 			}
 			else{
 				if (i % 2 == 0) {
-					viga[i-1] = new Barras(600,(600/viga.length)*i,800,30);
+					vigas[i-1] = new Barra(600,(600/vigas.length)*i,800,30);
 				}
 				else {
-					viga[i-1]=new Barras (200,(600/viga.length)*i,800,30);
+					vigas[i-1]=new Barra (200,(600/vigas.length)*i,800,30);
 				}
 			}	
-		}
-		for (int i = 1;i < ba.length+1;i++) 
+}
+		for (int i = 0;i < barril.length;i++) 
 		{
-			 ba[i-1]= new Barril (50,50,50);
+			 barril[i]= new Barril (50,50,50);
 		}
-		
+		barril[0].setActivo(true);
 		// Inicia el juego!
 		
 		this.entorno.iniciar();
@@ -71,20 +73,21 @@ this.entorno = new Entorno(this, "RescateDonkey - Grupo Apellido1 - Apellido2 -A
 	 */
 	public void tick()
 	{
+		
 		//Dibujar elementos 
 		
-		for (int i=0;i<ba.length;i++)
+		for (int i=0;i<barril.length;i++)
 		{
-			if (ba[i]!=null)
+			if (barril[i]!=null)
 			{
-				ba[i].dibujarse(entorno);
+				barril[i].dibujarse(entorno);
 			}		
 		}		
-		for (int i=0;i<viga.length;i++)
+		for (int i=0;i<vigas.length;i++)
 		{
-			if (viga[i]!=null)
+			if (vigas[i]!=null)
 			{
-				viga[i].dibujarse(entorno);
+				vigas[i].dibujarse(entorno);
 			}		
 		}		
 		for (int i=0;i<escalera.length;i++)
@@ -106,7 +109,7 @@ this.entorno = new Entorno(this, "RescateDonkey - Grupo Apellido1 - Apellido2 -A
 		{
 			for (int i =0; i<escalera.length;i++)
 			{
-				if (Mario.ColisionEscalera(escalera[i]) || Mario.ColisionViga(viga[i])) 
+				if (Mario.ColisionEscalera(escalera[i]) || Mario.ColisionViga(vigas[i])) 
 				{
 					Mario.subirArriba();	
 				}
@@ -116,17 +119,17 @@ this.entorno = new Entorno(this, "RescateDonkey - Grupo Apellido1 - Apellido2 -A
 		{
 			for (int i =0; i<escalera.length;i++)
 			{
-				if (Mario.ColisionEscalera(escalera[i]) && !Mario.ColisionViga(viga[i])) 
+				if (Mario.ColisionEscalera(escalera[i]) && !Mario.ColisionViga(vigas[i])) 
 				{
 					Mario.Abajo();
 				}
 			}
 		}
-		for (int i =0; i<viga.length;i++)
+		for (int i =0; i<vigas.length;i++)
 		{			
 			for (int j=0; j<escalera.length+1;j++)
 				{
-					if (!Mario.ColisionViga(viga[i]) && Mario.getY() < entorno.alto() -50 && !Mario.ColisionEscalera(escalera[j]))
+					if (Mario.ColisionViga(vigas[i]) && Mario.getY() < entorno.alto() -50 && !Mario.ColisionEscalera(escalera[j]))
 					{
 						Mario.caer();
 					}
@@ -134,31 +137,33 @@ this.entorno = new Entorno(this, "RescateDonkey - Grupo Apellido1 - Apellido2 -A
 		}
 		
 		// Movimiento Barriles
-		
-		for (int i =0; i<ba.length;i++)
+		for (int i =0; i<barril.length;i++)
 		{
-			for (int j =0; j<viga.length;j++)
+			boolean colisiono = false;
+			boolean ultimaBarra = false;
+			for (int j =0; j<vigas.length && !colisiono; j++)
 			{
-				if (!ba[i].ColisionViga(viga[j]))
-				{
-					ba[i].caer(1);
-				}
-				else
-				{
-					ba[i].caer(0);
-					i++;
-				}
+				colisiono = (barril[i].colisionBarraVertical(vigas[j]) && barril[i].colisionBarraHorizontal(vigas[j]));
+				ultimaBarra = (j==(vigas.length-1));
 			}
-			ba[i].avanzar(+1);
-			if (ba[i].getX()==entorno.ancho()-ba[i].getDiametro())
+			 
+			barril[i].setCayendo(!colisiono);
+
+			
+		
+			if (barril[i].getLimiteDerecho() >= entorno.ancho())
 			{
-				ba[i].avanzar(1);
+				barril[i].cambiarDireccion();
 			}
-			else if (ba[i].getX()==ba[i].getDiametro())
+			else if (barril[i].getLimiteIzquierdo() <= 0 && !ultimaBarra)
 			{
-				ba[i].avanzar(-2);				
+				barril[i].cambiarDireccion();				
 			}
+			
+			barril[i].moverse();
 		}
+		contadorTicks++;
+		
 }	
 
 	@SuppressWarnings("unused")
