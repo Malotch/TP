@@ -21,6 +21,7 @@ public class Barril {
 		this.cayendo = true;
 		this.direccion = 1;
 		this.activo = false;
+
 	}
 
 	public void dibujarse(Entorno entorno) {

@@ -1,5 +1,6 @@
 package juego;
 
+import java.awt.Color;
 import java.util.Random;
 import entorno.Entorno;
 import entorno.InterfaceJuego;
@@ -15,7 +16,7 @@ public class Juego extends InterfaceJuego {
 	Barril[] barril = new Barril[100];
 	Barra[] viga = new Barra[4];
 	Barra[] escalera = new Barra[4];
-	Personaje donkey = new Personaje(60, 95, 50, 80);
+	Personaje donkey = null;
 	Personaje mario = null;
 	int contadorTicks = 0;
 	int tickSalidaBarril = 0;
@@ -32,7 +33,8 @@ public class Juego extends InterfaceJuego {
 	}
 		public void estadoInicial () {
 			estadoDeJuego = estadoDeJuego.JUGANDO;
-			mario = new Personaje(40, 550, 20, 40);
+			mario = new Personaje(40, 550, 20, 40, Color.BLUE);
+			donkey = new Personaje(60, 95, 50, 80, Color.GREEN);
 			for (int i = 1; i < escalera.length + 1; i++) {
 				if (i % 2 == 0) {
 					escalera[i - 1] = new Barra(250, 360, 25, 150);
@@ -78,17 +80,19 @@ public class Juego extends InterfaceJuego {
 				escalera[i].dibujarseEscalera(entorno);
 			}
 		}
-		donkey.dibujarseDonkey(entorno);
-		mario.dibujarseMario(entorno);
+		donkey.dibujarse(entorno);
+		mario.dibujarse(entorno);
 	}
 	
 	public void movimientoPersonaje () {
 		boolean colisionoPersonajeViga = false;
 		boolean colisionoPersonajeEscalera = false;
+		boolean personajeAdentroViga = false;
 		Personaje.EstadosVerticales estadoVertical = Personaje.EstadosVerticales.PARADO;
 		Personaje.EstadosHorizontales estadoHorizontal = Personaje.EstadosHorizontales.PARADO;
 		for (int i = 0; i < viga.length && !colisionoPersonajeViga; i++) {
 			colisionoPersonajeViga = ((mario.colisionBarraVertical(viga[i]) && mario.colisionBarraHorizontal(viga[i])));
+			personajeAdentroViga = ((mario.adentroBarraVertical(viga[i]) && mario.adentroBarraHorizontal(viga[i])));
 		}
 		for (int i = 0; i < escalera.length && !colisionoPersonajeEscalera; i++) {
 			colisionoPersonajeEscalera = (mario.colisionBarraVertical((escalera[i]))) && mario.colisionBarraHorizontal(escalera[i]);
@@ -106,10 +110,10 @@ public class Juego extends InterfaceJuego {
  			estadoVertical = Personaje.EstadosVerticales.ENESCALERA;
 		}	
 	
-		if (entorno.estaPresionada(entorno.TECLA_IZQUIERDA) && mario.getX() - 5 > 0 )
+		if (entorno.estaPresionada(entorno.TECLA_IZQUIERDA) && mario.getX() - 5 > 0 && !personajeAdentroViga)
 			estadoHorizontal = Personaje.EstadosHorizontales.MOVERIZQUIERDA;
 		
-		if (entorno.estaPresionada(entorno.TECLA_DERECHA) && mario.getX() + 5 < entorno.ancho() - 5 )
+		if (entorno.estaPresionada(entorno.TECLA_DERECHA) && mario.getX() + 5 < entorno.ancho() - 5 && !personajeAdentroViga)
 			estadoHorizontal = Personaje.EstadosHorizontales.MOVERDERECHA;
 		
 		if ( estadoVertical != Personaje.EstadosVerticales.SALTANDO) {
@@ -202,14 +206,12 @@ public class Juego extends InterfaceJuego {
 				contadorTicks++;
 				break;
 			case GANADO:
-				mario.setEstadoVertical(Personaje.EstadosVerticales.SALTANDO);
-				mario.movimientoVertical();
-				mario.dibujarseMario(entorno);
+				festejoPersonaje (mario);
+				entorno.escribirTexto("GANASTE", 300, 300);
 				break;
 			case PERDIDO:
-				donkey.setEstadoVertical(Personaje.EstadosVerticales.SALTANDO);
-				donkey.movimientoVertical();
-				donkey.dibujarseDonkey(entorno);
+				festejoPersonaje (donkey);
+				entorno.escribirTexto("PERDISTE apreta enter para volver a arrancar", 300, 300);
 				if (entorno.estaPresionada(entorno.TECLA_ENTER)) {
 					this.estadoInicial();
 				}				
@@ -227,6 +229,11 @@ public class Juego extends InterfaceJuego {
 			}
 		}
 		
+	}
+	public void festejoPersonaje (Personaje personaje) {
+		personaje.setEstadoVertical(Personaje.EstadosVerticales.SALTANDO);
+		personaje.movimientoVertical();
+		personaje.dibujarse(entorno);
 	}
 	
 	public enum estadosDeJuego {
