@@ -13,14 +13,15 @@ public class Barril {
 	private int direccion;
 	private boolean activo;
 
-	public Barril(int x, int y,int diametro) {
-		this.diametro = diametro;		
+	public Barril(int x, int y, int diametro) {
+		this.diametro = diametro;
 		this.x = x;
 		this.y = y;
 		this.velocidad = 3;
 		this.cayendo = true;
 		this.direccion = 1;
-		this.activo = false;			
+		this.activo = false;
+
 	}
 
 	public void dibujarse(Entorno entorno) {
@@ -102,4 +103,10 @@ public class Barril {
 		this.activo = activo;
 	}
 
+	public void reSet() {
+		this.x = 50;
+		this.y = 50;
+		this.cambiarDireccion();
+	}
+	
 }
