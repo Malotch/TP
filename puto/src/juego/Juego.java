@@ -3,6 +3,8 @@ package juego;
 import java.util.Random;
 import entorno.Entorno;
 import entorno.InterfaceJuego;
+import juego.Personaje.EstadosHorizontales;
+import juego.Personaje.EstadosVerticales;
 
 public class Juego extends InterfaceJuego {
 	// El objeto Entorno que controla el tiempo y otros
@@ -10,54 +12,59 @@ public class Juego extends InterfaceJuego {
 
 	// Variables y métodos propios de cada grupo
 	// ...
-	Barril[] barril = new Barril[5];
+	Barril[] barril = new Barril[100];
 	Barra[] viga = new Barra[4];
 	Barra[] escalera = new Barra[4];
-	Personaje Donkey = new Personaje(60, 95, 50, 80);
-	Personaje Mario = new Personaje(40, 550, 20, 40);;
+	Personaje donkey = new Personaje(60, 95, 50, 80);
+	Personaje mario = null;
 	int contadorTicks = 0;
-	Random Aleatorio = new Random();
+	int tickSalidaBarril = 0;
+	Random numeroAleatorioBarril = new Random();
+	int ultimaSalidaBarril = 0;
+	private estadosDeJuego estadoDeJuego;
 
 	Juego() {
 
 		this.entorno = new Entorno(this, "RescateDonkey Fiandrino, Grauberger, - , - ", 800, 600);
-
+		this.estadoInicial();
 		// Inicializar lo que haga falta para el juego
 		// ...
-
-		for (int i = 1; i < escalera.length + 1; i++) {
-			if (i % 2 == 0) {
-				escalera[i - 1] = new Barra(250, 360, 25, 150);
-			} else {
-				escalera[i - 1] = new Barra(550, ((600 / viga.length) * i) + 60, 25, 150);
-			}
-		}
-
-		for (int i = 1; i < viga.length + 1; i++) {
-			if (i == 4) {
-				viga[i - 1] = new Barra(400, 600, 850, 30);
-			} else {
+	}
+		public void estadoInicial () {
+			estadoDeJuego = estadoDeJuego.JUGANDO;
+			mario = new Personaje(40, 550, 20, 40);
+			for (int i = 1; i < escalera.length + 1; i++) {
 				if (i % 2 == 0) {
-					viga[i - 1] = new Barra(600, (600 / viga.length) * i, 800, 30);
+					escalera[i - 1] = new Barra(250, 360, 25, 150);
 				} else {
-					viga[i - 1] = new Barra(200, (600 / viga.length) * i, 800, 30);
+					escalera[i - 1] = new Barra(550, ((600 / viga.length) * i) + 60, 25, 150);
 				}
 			}
+	
+			for (int i = 1; i < viga.length + 1; i++) {
+				if (i == 4) {
+					viga[i - 1] = new Barra(400, 600, 850, 30);
+				} else {
+					if (i % 2 == 0) {
+						viga[i - 1] = new Barra(600, (600 / viga.length) * i, 800, 30);
+					} else {
+						viga[i - 1] = new Barra(200, (600 / viga.length) * i, 800, 30);
+					}
+				}
+			}
+			for (int i = 0; i < barril.length; i++) {
+				barril[i] = new Barril(50, 50, 30);
+			}
+			
+			// Inicia el juego!
+	
+			this.entorno.iniciar();
 		}
-		for (int i = 0; i < barril.length; i++) {
-			barril[i] = new Barril(50, 50, 30);
-		}
-		barril[0].setActivo(true);
-		
-		// Inicia el juego!
-
-		this.entorno.iniciar();
-	}
 	
 	public void dibujarElementos () {
 
 		for (int i = 0; i < barril.length; i++) {
-			if (barril[i] != null) {
+			if (barril[i].isActivo()) {
 				barril[i].dibujarse(entorno);
 			}
 		}
@@ -71,8 +78,8 @@ public class Juego extends InterfaceJuego {
 				escalera[i].dibujarseEscalera(entorno);
 			}
 		}
-		Donkey.dibujarseDonkey(entorno);
-		Mario.dibujarseMario(entorno);
+		donkey.dibujarseDonkey(entorno);
+		mario.dibujarseMario(entorno);
 	}
 	
 	public void movimientoPersonaje () {
@@ -81,10 +88,10 @@ public class Juego extends InterfaceJuego {
 		Personaje.EstadosVerticales estadoVertical = Personaje.EstadosVerticales.PARADO;
 		Personaje.EstadosHorizontales estadoHorizontal = Personaje.EstadosHorizontales.PARADO;
 		for (int i = 0; i < viga.length && !colisionoPersonajeViga; i++) {
-			colisionoPersonajeViga = ((Mario.colisionBarraVertical(viga[i]) && Mario.colisionBarraHorizontal(viga[i])));
+			colisionoPersonajeViga = ((mario.colisionBarraVertical(viga[i]) && mario.colisionBarraHorizontal(viga[i])));
 		}
 		for (int i = 0; i < escalera.length && !colisionoPersonajeEscalera; i++) {
-			colisionoPersonajeEscalera = (Mario.colisionBarraVertical((escalera[i]))) && Mario.colisionBarraHorizontal(escalera[i]);
+			colisionoPersonajeEscalera = (mario.colisionBarraVertical((escalera[i]))) && mario.colisionBarraHorizontal(escalera[i]);
 		}
 
 		if (colisionoPersonajeViga){
@@ -99,66 +106,77 @@ public class Juego extends InterfaceJuego {
  			estadoVertical = Personaje.EstadosVerticales.ENESCALERA;
 		}	
 	
-		if (entorno.estaPresionada(entorno.TECLA_IZQUIERDA) && Mario.getX() - 5 > 0 )
+		if (entorno.estaPresionada(entorno.TECLA_IZQUIERDA) && mario.getX() - 5 > 0 )
 			estadoHorizontal = Personaje.EstadosHorizontales.MOVERIZQUIERDA;
 		
-		if (entorno.estaPresionada(entorno.TECLA_DERECHA) && Mario.getX() + 5 < entorno.ancho() - 5 )
+		if (entorno.estaPresionada(entorno.TECLA_DERECHA) && mario.getX() + 5 < entorno.ancho() - 5 )
 			estadoHorizontal = Personaje.EstadosHorizontales.MOVERDERECHA;
 		
 		if ( estadoVertical != Personaje.EstadosVerticales.SALTANDO) {
-			if (entorno.estaPresionada(entorno.TECLA_ARRIBA) && Mario.getY() < entorno.alto() + 5 && Mario.getEstadoVertical() != Personaje.EstadosVerticales.CAYENDO) {
+			if (entorno.estaPresionada(entorno.TECLA_ARRIBA) && mario.getY() < entorno.alto() + 5 && mario.getEstadoVertical() != Personaje.EstadosVerticales.CAYENDO) {
 				for (int i = 0; i < escalera.length; i++) {
 					if (estadoVertical == Personaje.EstadosVerticales.ENESCALERA) {
 						estadoVertical = Personaje.EstadosVerticales.SUBIENDOESCALERA;
 					} 
-					else if (Mario.colisionBarraVertical(viga[i]) && Mario.colisionBarraHorizontal(viga[i]) && colisionoPersonajeEscalera == false ) {
+					else if (mario.colisionBarraVertical(viga[i]) && mario.colisionBarraHorizontal(viga[i]) && colisionoPersonajeEscalera == false ) {
 						estadoVertical = Personaje.EstadosVerticales.SALTANDO;
 					}
 				}
 			}
 						
-			if (entorno.estaPresionada(entorno.TECLA_ABAJO) && Mario.getX() < entorno.alto() + 5) {
+			if (entorno.estaPresionada(entorno.TECLA_ABAJO) && mario.getX() < entorno.alto() + 5) {
 				for (int i = 0; i < escalera.length; i++) {
-					if ((Mario.colisionBarraVertical(escalera[i]) 
-						&& Mario.colisionBarraHorizontal(escalera[i])
-						&& (escalera[i].getLimiteInferior() >= Mario.getLimiteInferior()))) {
+					if ((mario.colisionBarraVertical(escalera[i]) 
+						&& mario.colisionBarraHorizontal(escalera[i])
+						&& (escalera[i].getLimiteInferior() >= mario.getLimiteInferior()))) {
 						estadoVertical = Personaje.EstadosVerticales.BAJANDOESCALERA;
 					}
 				}
 			}
 			
 		}
- 		if (Mario.getEstadoVertical() != Personaje.EstadosVerticales.SALTANDO) {
-			Mario.setEstadoVertical(estadoVertical);
+		for (int i = 0; i < barril.length; i++) {
+			if (mario.colisionBarrilHorizontal(barril[i]) && mario.colisionBarrilVertical(barril[i])){
+				estadoDeJuego = estadoDeJuego.PERDIDO;
+			}
 		}
-		Mario.setEstadoHorizontal(estadoHorizontal);
-		Mario.movimientoVertical();
-		Mario.movimientoHorizontal();
+		if (mario.colisionPersonajeHorizontal(donkey) && mario.colisionPersonajeVertical(donkey)){
+			estadoDeJuego = estadoDeJuego.GANADO;
+		}
+ 		if (mario.getEstadoVertical() != Personaje.EstadosVerticales.SALTANDO) {
+			mario.setEstadoVertical(estadoVertical);
+		}
+		mario.setEstadoHorizontal(estadoHorizontal);
+		mario.movimientoVertical();
+		mario.movimientoHorizontal();
 	}
 	
 	public void movimientoBarriles () {
-		for (int i = 0; i < barril.length; i++) {
-			boolean colisiono = false;
-			boolean ultimaBarra = false;
-			for (int j = 0; j < viga.length && !colisiono; j++) {
-				colisiono = (barril[i].colisionBarraVertical(viga[j]) && barril[i].colisionBarraHorizontal(viga[j]));
-				ultimaBarra = (j == (viga.length - 1));
+		
+		for (int i = 0; i < barril.length; i++) {		
+			if (barril[i].isActivo()) {
+				boolean colisiono = false;
+				boolean ultimaBarra = false;
+				for (int j = 0; j < viga.length && !colisiono; j++) {
+					colisiono = (barril[i].colisionBarraVertical(viga[j]) && barril[i].colisionBarraHorizontal(viga[j]));
+					ultimaBarra = (j == (viga.length - 1));
+				}
+	
+				barril[i].setCayendo(!colisiono);
+	
+				if (barril[i].getLimiteDerecho() >= entorno.ancho()) {
+					barril[i].cambiarDireccion();
+				} else if (barril[i].getLimiteIzquierdo() <= 0 && !ultimaBarra) {
+					barril[i].cambiarDireccion();
+				}
+				if (barril[i].getLimiteDerecho() == 0) {
+					barril[i].setActivo(false);
+					barril[i].reSet();
+				}			
+				barril[i].moverse();
 			}
-
-			barril[i].setCayendo(!colisiono);
-
-			if (barril[i].getLimiteDerecho() >= entorno.ancho()) {
-				barril[i].cambiarDireccion();
-			} else if (barril[i].getLimiteIzquierdo() <= 0 && !ultimaBarra) {
-				barril[i].cambiarDireccion();
-			}
-			if (barril[i].getLimiteDerecho() == 0) {
-				barril[i].setActivo(false);
-			}
-			barril[i].moverse();
 		}
-	}
-
+}
 	/*
 	 * Durante el juego, el método tick() será ejecutado en cada instante y por lo
 	 * tanto es el método más importante de esta clase. Aquí se debe actualizar
@@ -167,16 +185,62 @@ public class Juego extends InterfaceJuego {
 	 */
 	
 	public void tick() {
-
-		this.dibujarElementos();
-
-		this.movimientoPersonaje();
-	
-		this.movimientoBarriles();
+		switch (this.estadoDeJuego) {
+			case JUGANDO:
+				if ( contadorTicks%100 == 0) {
+					if (numeroAleatorioBarril.nextInt(10) < 5) { 
+						this.lanzarBarril();
+					}
+				}
 				
-		contadorTicks++;
+				this.dibujarElementos();
+
+				this.movimientoPersonaje();
+			
+				this.movimientoBarriles();
+						
+				contadorTicks++;
+				break;
+			case GANADO:
+				mario.setEstadoVertical(Personaje.EstadosVerticales.SALTANDO);
+				mario.movimientoVertical();
+				mario.dibujarseMario(entorno);
+				break;
+			case PERDIDO:
+				donkey.setEstadoVertical(Personaje.EstadosVerticales.SALTANDO);
+				donkey.movimientoVertical();
+				donkey.dibujarseDonkey(entorno);
+				if (entorno.estaPresionada(entorno.TECLA_ENTER)) {
+					this.estadoInicial();
+				}				
+				break;
+		}
+		
 
 	}
+
+	private void lanzarBarril() {
+		for (int i = 0; i < barril.length; i++) {			
+			if (!barril[i].isActivo()) {
+				barril[i].setActivo(true);
+				break;
+			}
+		}
+		
+	}
+	
+	public enum estadosDeJuego {
+		JUGANDO, GANADO, PERDIDO
+	}
+	
+	public estadosDeJuego getestadosDeJuego() {
+		return estadoDeJuego;
+	}
+	
+	public void setestadosDeJuego (estadosDeJuego estado) {
+		this.estadoDeJuego = estado;
+	}
+
 
 	@SuppressWarnings("unused")
 	public static void main(String[] args) {

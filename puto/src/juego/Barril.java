@@ -106,7 +106,6 @@ public class Barril {
 		this.x = 50;
 		this.y = 50;
 		this.cambiarDireccion();
-		this.setActivo(true);
 	}
-
+	
 }
